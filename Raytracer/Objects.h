@@ -20,10 +20,18 @@ typedef struct Sphere {
 } Sphere;
 typedef struct Plane {
    vec3 normal;
-   vec3 pos;
+   float distance;
 }
 typedef struct Ray {
    vec3 pos;
    vec3 dir;
 }
+typedef struct Color {
+   float r;
+   float g;
+   float b;
+}
+
+vec3 unit( vec3 in );
+float dot( vec3 first, vec3 second );
 #endif

@@ -15,5 +15,6 @@ Color intersection( Sphere obj, Ray ray, int t );
 Color intersection( Plane obj, Ray ray, int t ); 
 int hitTest( Sphere obj, Ray ray );
 int hitTest( Plane obj, Ray ray );
+Color castRay( Ray ray );
 
 #endif
