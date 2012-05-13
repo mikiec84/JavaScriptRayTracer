@@ -11,8 +11,8 @@
 #define UTIL_H
 #include "Objects.h"
 
-Color intersection( Sphere obj, Ray ray, int t ); 
-Color intersection( Plane obj, Ray ray, int t ); 
+Color intersection( Sphere obj, Ray ray, Light *lights, int numLights, int t ); 
+Color intersection( Plane obj, Ray ray, Light *lights, int numLights, int t ); 
 int hitTest( Sphere obj, Ray ray );
 int hitTest( Plane obj, Ray ray );
 Color castRay( Ray ray );
