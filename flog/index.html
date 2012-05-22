@@ -118,7 +118,11 @@ function renderScene(){
     $("canvas").setAttribute("width", imageWidth);
     $("canvas").setAttribute("height", imageHeight);
     
+    var start = new Date().getTime();
     raytracer.renderScene(scene, $("canvas"), 0);
+    var end = new Date().getTime();
+
+    document.getElementById('timer').innerHTML = (end - start) + "ms";
 }
 
 function start(){
@@ -139,7 +143,7 @@ canvas {
     background: #000;
     float: left;
 }
-fieldset#options {
+#options {
     width: 180px;
     margin-left: 20px;
     float: left;
@@ -155,37 +159,40 @@ a great (fast) JavaScript processor.</p>
 
 <canvas id="canvas" width="500" height="500" style="border:5px solid #000"></canvas>
 
-<fieldset id="options">
-    <legend>Rendering Options</legend>
-    <fieldset>
-        <legend>Output</legend>
-        <label for="imageWidth">Image Width: </label><br>
-        <input type="text" id="imageWidth" value="500">
-        <br>
-        <label for="imageHeight">Image Height: </label><br>
-        <input type="text" id="imageHeight" value="500">
-        <br>
-        <label for="pixelSize">Pixel size:</label><br>
-        <select id="pixelSize">
-            <option value="20,20">Quick &amp; nasty (20x20)</option>
-            <option value="10,10">Faster (10x10)</option>
-            <option value="5,5">Fast (5x5)</option>
-            <option value="2,5">Ok quality (2x5)</option>
-            <option value="2,2">Good quality (2x2)</option>
-            <option value="1,1">Best quality (1x1)</option>
-        </select>
-    </fieldset>
-    
-    <fieldset>
-        <legend>Render</legend>
-        <label><input type="checkbox" id="renderDiffuse" checked="checked"> Diffuse</label>
-        <br>
-        <label><input type="checkbox" id="renderShadows" checked="checked"> Shadows</label>
-        <br>
-        <label><input type="checkbox" id="renderHighlights" checked="checked"> Highlights</label>
-        <br>
-        <label><input type="checkbox" id="renderReflections" checked="checked"> Reflections</label>
-    </fieldset>
-    
-    <button type="button" id="btnRender">Render</button>
-</fieldset>
+<div id="options">
+   <fieldset>
+       <legend>Rendering Options</legend>
+       <fieldset>
+           <legend>Output</legend>
+           <label for="imageWidth">Image Width: </label><br>
+           <input type="text" id="imageWidth" value="500">
+           <br>
+           <label for="imageHeight">Image Height: </label><br>
+           <input type="text" id="imageHeight" value="500">
+           <br>
+           <label for="pixelSize">Pixel size:</label><br>
+           <select id="pixelSize">
+               <option value="20,20">Quick &amp; nasty (20x20)</option>
+               <option value="10,10">Faster (10x10)</option>
+               <option value="5,5">Fast (5x5)</option>
+               <option value="2,5">Ok quality (2x5)</option>
+               <option value="2,2">Good quality (2x2)</option>
+               <option value="1,1">Best quality (1x1)</option>
+           </select>
+       </fieldset>
+
+       <fieldset>
+           <legend>Render</legend>
+           <label><input type="checkbox" id="renderDiffuse" checked="checked"> Diffuse</label>
+           <br>
+           <label><input type="checkbox" id="renderShadows" checked="checked"> Shadows</label>
+           <br>
+           <label><input type="checkbox" id="renderHighlights" checked="checked"> Highlights</label>
+           <br>
+           <label><input type="checkbox" id="renderReflections" checked="checked"> Reflections</label>
+       </fieldset>
+
+       <button type="button" id="btnRender">Render</button>
+   </fieldset>
+   <h3 id="timer"></h3>
+</div>
