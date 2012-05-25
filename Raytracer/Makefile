@@ -13,8 +13,8 @@ all:	$(ALL) PBC
 PBC:	$(ALL)
 	$(CC) $(LDFLAGS) $(ALL) -o PBC 
 
-PBCMain.o:	PBCMain.cpp Util/Header.h Util/Tga.h Objects/Sphere.h Objects/Objects.h Objects/Plane.h Util/vec3.h Objects/LightSource.h Objects/Camera.h Util/Parser.h Util/Color.o Util/Ray.o 
-	$(CC) $(CFLAGS) -o $@ $<
+#PBCMain.o:	PBCMain.cpp Util/Header.h Util/Tga.h Objects/Sphere.h Objects/Objects.h Objects/Plane.h Util/vec3.h Objects/LightSource.h Objects/Camera.h Util/Parser.h Util/Color.o Util/Ray.o 
+#	$(CC) $(CFLAGS) -o $@ $<
 
 Util/Header.o:	Util/Header.cpp Util/Header.h
 	$(CC) $(CFLAGS) -o $@ $<
