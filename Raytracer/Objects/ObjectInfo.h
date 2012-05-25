@@ -8,9 +8,6 @@
  */
 #ifndef OBJECT_H
 #define OBJECT_H
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include "../Util/vec3.h"
 #include "../Util/Color.h"
 #include <stdlib.h>
@@ -32,8 +29,6 @@ typedef struct ColorInfo {
 
 typedef struct ObjectInfo {
    ColorInfo colorInfo;
-   glm::mat4 transforms;
-   glm::mat4 transpose;
 } ObjectInfo;
 
 ObjectInfo createObjectInfo();

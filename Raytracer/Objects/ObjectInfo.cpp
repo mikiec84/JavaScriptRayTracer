@@ -27,8 +27,6 @@ ObjectInfo createObjectInfo()
    obj.colorInfo.finish_reflection = 0;
    obj.colorInfo.finish_refraction = 0;
    obj.colorInfo.finish_ior = 0;
-   obj.transforms = glm::mat4(1.0f);
-   obj.transpose = glm::mat4(1.0f);
    return obj;
 }
 void parseObjectPigment( FILE *file, ObjectInfo &info )
@@ -340,8 +338,6 @@ void parseObjectTransforms( FILE *file, ObjectInfo &info )
          }
          printf(" translate: %f , %f , %f\n", translate.x, translate.y, translate.z );
          //add translate to transform matrix
-         info.transforms = glm::translate( info.transforms,
-               glm::vec3( translate.x, translate.y, translate.z ));
       }
       //Scale found
       else if( cur == 's' || cur == 'S' )
@@ -370,7 +366,6 @@ void parseObjectTransforms( FILE *file, ObjectInfo &info )
             }
          }
          printf(" Scale: %f , %f , %f\n", scale.x, scale.y, scale.z );
-         info.transforms = glm::scale( info.transforms, glm::vec3( scale.x, scale.y, scale.z ) );
       }
       //Rotate found
       else if( cur == 'r' || cur == 'R' )
@@ -400,12 +395,6 @@ void parseObjectTransforms( FILE *file, ObjectInfo &info )
             }
          }
          printf(" Rotate: %f , %f , %f\n", rotate.x, rotate.y, rotate.z );
-         glm::mat4 rotz = glm::rotate( glm::mat4(1.0f), rotate.z, glm::vec3( 0.0, 0.0, 1.0 ) );
-         glm::mat4 roty = glm::rotate( glm::mat4(1.0f), rotate.y, glm::vec3( 0.0, 1.0, 0.0 ) );
-         glm::mat4 rotx = glm::rotate( glm::mat4(1.0f), rotate.x, glm::vec3( 1.0, 0.0, 0.0 ) );
-         info.transforms = rotz * roty * rotx * info.transforms;
       }
    }
-   info.transforms = glm::inverse( info.transforms );
-   info.transpose = glm::transpose( info.transforms );
 }

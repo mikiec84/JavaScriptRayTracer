@@ -11,19 +11,15 @@
 float sphereHitTest( const Sphere &sphere, const Ray &ray )
 {
    vec3 direction = unit( ray.dir );
-   glm::vec4 dir = glm::vec4(direction.x, direction.y, direction.z, 0.0f);
-   glm::vec4 pos = glm::vec4(ray.pos.x, ray.pos.y, ray.pos.z, 1.0f);
-   dir = sphere.info.transforms*dir;
-   pos = sphere.info.transforms*pos;
    float xc = sphere.pos.x;
    float yc = sphere.pos.y;
    float zc = sphere.pos.z;
-   float x0 = pos[0];
-   float y0 = pos[1];
-   float z0 = pos[2];
-   float xd = dir[0];
-   float yd = dir[1];
-   float zd = dir[2];
+   float x0 = ray.pos.x;
+   float y0 = ray.pos.y;
+   float z0 = ray.pos.z;
+   float xd = direction.x;
+   float yd = direction.y;
+   float zd = direction.z;
 
    float A = xd*xd + yd*yd + zd*zd;
    float B = 2*(xd *(x0-xc) + yd*(y0-yc) + zd*(z0-zc));
@@ -45,10 +41,6 @@ Intersection sphereIntersection( const Sphere &sphere, const Ray &ray, float t0 
 {
    vec3 direction = unit( ray.dir );
    Intersection ret;
-   glm::vec4 dir = glm::vec4(direction.x, direction.y, direction.z, 0.0f);
-   glm::vec4 pos = glm::vec4(ray.pos.x, ray.pos.y, ray.pos.z, 1.0f);
-   dir = sphere.info.transforms * dir;
-   pos = sphere.info.transforms * pos;
    float xc = sphere.pos.x;
    float yc = sphere.pos.y;
    float zc = sphere.pos.z;
@@ -66,19 +58,13 @@ Intersection sphereIntersection( const Sphere &sphere, const Ray &ray, float t0 
    ret.hitMark.z = z0 + zd*t0;
 
    vec3 objHit;
-   objHit.x = pos[0] + dir[0]* t0;
-   objHit.y = pos[1] + dir[1]* t0;
-   objHit.z = pos[2] + dir[2]* t0;
+   objHit.x = ray.pos.x + direction.x* t0;
+   objHit.y = ray.pos.y + direction.y* t0;
+   objHit.z = ray.pos.z + direction.z* t0;
 
    ret.normal.x = (objHit.x - xc)/sphere.radius;
    ret.normal.y = (objHit.y - yc)/sphere.radius;
    ret.normal.z = (objHit.z - zc)/sphere.radius;
-   ret.normal = unit(ret.normal);
-   glm::vec4 n = glm::vec4( ret.normal.x, ret.normal.y, ret.normal.z, 1 );
-   n = sphere.info.transpose * n;
-   ret.normal.x = n[0];
-   ret.normal.y = n[1];
-   ret.normal.z = n[2];
    ret.normal = unit(ret.normal);
    ret.colorInfo = sphere.info.colorInfo;
 

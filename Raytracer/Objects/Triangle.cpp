@@ -11,17 +11,10 @@
 float triangleHitTest( const Triangle &triangle, const Ray &ray )
 {
    vec3 direction = unit( ray.dir );
-   vec3 position;
-   glm::vec4 dir = glm::vec4(direction.x, direction.y, direction.z, 0.0f);
-   glm::vec4 pos = glm::vec4(ray.pos.x, ray.pos.y, ray.pos.z, 1.0f);
-   dir = triangle.info.transforms*dir;
-   pos = triangle.info.transforms*pos;
-   direction.x = dir[0];
-   direction.y = dir[1];
-   direction.z = dir[2];
-   position.x = pos[0];
-   position.y = pos[1];
-   position.z = pos[2];
+   vec3 position = ray.pos;
+   direction.x = direction.x;
+   direction.y = direction.y;
+   direction.z = direction.z;
 
    float aa = triangle.a.x - triangle.b.x;
    float bb = triangle.a.y - triangle.b.y;
@@ -153,12 +146,6 @@ Triangle parseTriangle( FILE *file )
    parseObjectPigment( file, tri.info );
    parseObjectFinish( file, tri.info );
    parseObjectTransforms( file, tri.info );
-   glm::vec4 n = glm::vec4( tri.normal.x, tri.normal.y, tri.normal.z, 1 );
-
-   n = tri.info.transpose * n ;
-   tri.normal.x = n[0];
-   tri.normal.y = n[1];
-   tri.normal.z = n[2];
    tri.normal = unit(tri.normal);
 
    //Parsing transforms uses up the ending bracket so no need to read to it
