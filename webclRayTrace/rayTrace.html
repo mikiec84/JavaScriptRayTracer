@@ -1,0 +1,125 @@
+<html>
+ <head>
+  <title>GPU Ray Tracer</title>
+ 
+<script id="clRayTraceProgram" type="text/x-opencl" src="Master.c">
+</script> 
+
+
+
+<script type="text/javascript">
+
+
+
+function gpuRayTrace() {
+
+  try {
+    // First check if the WebCL extension is installed at all 
+    if (window.WebCL == undefined) {
+      alert("Unfortunately your system does not support WebCL. " +
+            "Make sure that you have both the OpenCL driver " +
+            "and the WebCL browser extension installed.");
+      return false;
+    }
+    var platforms = WebCL.getPlatformIDs();     
+    var ctx = WebCL.createContextFromType ([WebCL.CL_CONTEXT_PLATFORM, 
+                                           platforms[0]],
+                                           WebCL.CL_DEVICE_TYPE_DEFAULT);
+
+     // Create and build program
+    var kernelSrc = loadKernel("clRayTraceProgram");
+    var program = ctx.createProgramWithSource(kernelSrc);
+    var devices = ctx.getContextInfo(WebCL.CL_CONTEXT_DEVICES);
+    try {
+      program.buildProgram ([devices[0]], "");
+    } catch(e) {
+      alert ("Failed to build WebCL program. Error "
+             + program.getProgramBuildInfo (devices[0], 
+                                            WebCL.CL_PROGRAM_BUILD_STATUS)
+             + ":  " + program.getProgramBuildInfo (devices[0], 
+                                                    WebCL.CL_PROGRAM_BUILD_LOG));
+      throw e;
+    }
+
+	var raysSize = 8*4*1000*1000;
+	var raysBuffer = ctx.createBuffer(WebCL.CL_MEM_READ_WRITE, raysSize);
+	
+	var imageSize = 500*500*4;
+	var imageBuffer = ctx.createBuffer(WebCL.CL_MEM_READ_WRITE, imageSize);
+	
+    // Create kernel and set arguments
+    var kernel = program.createKernel ("clRayTrace");
+	kernel.setKernelArg(0, raysBuffer);
+	kernel.setKernelArg(1, imageBuffer);
+
+	
+    var cmdQueue = ctx.createCommandQueue (devices[0], 0);
+
+    // Init ND-range 
+    var localWS = [1,1];
+	var globalWS = [1,1];
+    // Execute (enqueue) kernel
+    cmdQueue.enqueueNDRangeKernel(kernel, globalWS.length, [], 
+                                  globalWS, localWS, []);
+
+	// Get pixel data from canvas
+    var canvasImg = document.getElementById("canvasImg");
+    var canvasImgCtx = canvasImg.getContext("2d");
+    var width = canvasImg.width;
+    var height = canvasImg.height;
+    var pixels = canvasImgCtx.getImageData(0, 0, width, height);
+								  					  
+    // Read the result buffer from OpenCL device
+    cmdQueue.enqueueReadBuffer (imageBuffer, false, 0, imageSize, pixels.data, []);
+    cmdQueue.finish (); //Finish all the operations
+	canvasImgCtx.putImageData (pixels, 0, 0);
+	console.log("Finished webcl");	
+  } catch(e) {
+    document.getElementById("output").innerHTML += 
+      "<h3>ERROR:</h3><pre style=\"color:red;\">" + e.message + "</pre>";
+    throw e;
+  }  
+}
+
+function loadKernel(id) {
+   var kernelElement = document.getElementById(id);
+   var kernelSource = kernelElement.text;
+   if (kernelElement.src != "") {
+      var mHttpReq = new XMLHttpRequest();
+      mHttpReq.open("GET", kernelElement.src, false);
+      mHttpReq.send(null);
+      kernelSource = mHttpReq.responseText;
+   }
+   return kernelSource;
+}
+
+
+
+function setupCanvas () {
+  try {
+    var canvasImg = document.getElementById("canvasImg");
+    var canvasImgCtx = canvasImg.getContext("2d");
+    var srcImg = document.getElementById("srcimg");
+    canvasImg.width = srcImg.width;
+    canvasImg.height = srcImg.height;
+    canvasImgCtx.drawImage (srcImg, 0, 0, srcImg.width, srcImg.height);
+  } catch(e) {
+    document.getElementById("output").innerHTML += 
+      "<h3>ERROR:</h3><pre style=\"color:red;\">" + e.message + "</pre>";
+    throw e;
+  }
+}
+
+  </script>
+
+
+
+ </head>
+ <body onload="">
+<input type="button" value="Multiply Matrices on GPU" onclick="gpuRayTrace();">
+<img id="srcimg" src="beach.jpg"  width="500" height="500" style="display:none;" onload="setupCanvas ();">
+<canvas id="canvasImg"></canvas>
+<div id="output"> </div>
+
+ </body>
+</html>
