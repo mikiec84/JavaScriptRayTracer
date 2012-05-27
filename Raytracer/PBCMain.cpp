@@ -28,6 +28,7 @@
 //#include "Util/Tga.h"
 //#include "Util/Color.h"
 #include "Master.h"
+#include "Util/Tga.h"
 
 int width_of_image;
 int height_of_image;
@@ -81,9 +82,9 @@ int main(int argc, char *argv[])
    scene.pointLights[0].pos.x = -100;
    scene.pointLights[0].pos.y = 100;
    scene.pointLights[0].pos.z = 100;
-   scene.pointLights[0].color.r = 1.5;
-   scene.pointLights[0].color.g = 1.5;
-   scene.pointLights[0].color.b = 1.5;
+   scene.pointLights[0].color.r = 1.0;
+   scene.pointLights[0].color.g = 1.0;
+   scene.pointLights[0].color.b = 1.0;
 
    Ray *rays;
 

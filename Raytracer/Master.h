@@ -12,16 +12,19 @@ typedef struct Camera {
    float l,r,b,t;
 } Camera;
 
-typedef struct PointLight {
-   Color color;
-   vec3 pos;
-} PointLight;
-
+#ifndef COLOR_H
+#define COLOR_H
 typedef struct Color {
    float r;
    float g;
    float b;
 } Color;
+#endif
+
+typedef struct PointLight {
+   Color color;
+   vec3 pos;
+} PointLight;
 
 typedef struct ColorInfo {
    float finish_ambient;
