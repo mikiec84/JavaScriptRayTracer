@@ -1,3 +1,5 @@
+extern "C" {
+
 typedef struct vec3{
    float x;
    float y;
@@ -93,17 +95,17 @@ typedef struct Scene {
 
 ObjectInfo createObjectInfo();
 
-float planeHitTest( const Plane &sphere, const Ray &ray );
-Intersection planeIntersection( const Plane &sphere, const Ray &ray, float t );
+float planeHitTest(  Plane sphere,  Ray ray );
+Intersection planeIntersection(  Plane sphere,  Ray ray, float t );
 
-float sphereHitTest( const Sphere &sphere, const Ray &ray ); 
-Intersection sphereIntersection( const Sphere &sphere, const Ray &ray, float t );
+float sphereHitTest(  Sphere sphere,  Ray ray ); 
+Intersection sphereIntersection(  Sphere sphere,  Ray ray, float t );
 
-float triangleHitTest( const Triangle &triangle, const Ray &ray ); 
-Intersection triangleIntersection( const Triangle &triangle, const Ray &ray, float t );
+float triangleHitTest(  Triangle triangle,  Ray ray ); 
+Intersection triangleIntersection(  Triangle triangle,  Ray ray, float t );
 
-Color limitColor( const Color &in );
-Color plus( const Color &first, const Color &other );
+Color limitColor(  Color in );
+Color plus(  Color first,  Color other );
 
 Color directIllumination( Intersection inter, Scene scene );
 
@@ -111,10 +113,12 @@ int createInitRays( struct Ray **rays, int width, int height, struct Camera cam 
 void castRays( struct Scene scene, struct Ray *rays, int numRays, int width, int height, Color **buffer);
 Color raytrace( struct Scene scene, Ray ray );
 
-float mag(const vec3 &in);
-float dot(const vec3 &one, const vec3 &two);
-vec3 cross(const vec3 &one, const vec3 &two);
-float theta(const vec3 &one, const vec3 &two);
-float distance(const vec3 &one, const vec3 &two );
-vec3 newDirection(const vec3 &to, const vec3 &from );
-vec3 unit(const vec3 &in);
+float mag( vec3 in);
+float dot( vec3 one,  vec3 two);
+vec3 cross( vec3 one,  vec3 two);
+float theta( vec3 one,  vec3 two);
+float distance( vec3 one,  vec3 two );
+vec3 newDirection( vec3 to,  vec3 from );
+vec3 unit( vec3 in);
+
+}

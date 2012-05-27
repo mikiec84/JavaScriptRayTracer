@@ -7,7 +7,16 @@
  *  @author Nick Feeney
  */
 #include "Master.h"
-float planeHitTest(const Plane &plane, const Ray &ray )
+
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef char bool;
+#define true 1
+#define false 0
+
+float planeHitTest( Plane plane,  Ray ray )
 {
    vec3 direction = unit(ray.dir);
    vec3 position;
@@ -32,7 +41,7 @@ float planeHitTest(const Plane &plane, const Ray &ray )
    return t;
 
 }
-Intersection planeIntersection( const Plane &plane, const Ray &ray, float t )
+Intersection planeIntersection(  Plane plane,  Ray ray, float t )
 {
    Intersection ret;
    ret.hit = true;
@@ -57,7 +66,7 @@ Intersection planeIntersection( const Plane &plane, const Ray &ray, float t )
  *  @author Nick Feeney
  */
 
-float sphereHitTest( const Sphere &sphere, const Ray &ray )
+float sphereHitTest(  Sphere sphere,  Ray ray )
 {
    vec3 direction = unit( ray.dir );
    float xc = sphere.pos.x;
@@ -86,7 +95,7 @@ float sphereHitTest( const Sphere &sphere, const Ray &ray )
       return -1;
    return t0;
 }
-Intersection sphereIntersection( const Sphere &sphere, const Ray &ray, float t0 )
+Intersection sphereIntersection(  Sphere sphere,  Ray ray, float t0 )
 {
    vec3 direction = unit( ray.dir );
    Intersection ret;
@@ -121,54 +130,6 @@ Intersection sphereIntersection( const Sphere &sphere, const Ray &ray, float t0 
    return ret;
 }
 
-Sphere parseSphere( FILE *file )
-{
-   Sphere sphere;
-   char cur = '\0';
-
-   //location
-   while(cur != '<')
-   {
-      if(fscanf(file, "%c", &cur) == EOF)
-      {
-         printf("Error parsing sphere\n");
-         exit(1);
-      }
-   }
-   if( fscanf(file, " %f, %f, %f ", &(sphere.pos.x), &(sphere.pos.y), &(sphere.pos.z) ) == EOF )
-   {
-      printf("Error parsing sphere\n");
-      exit(1);
-   }
-
-   printf( "location: %f %f %f\n", sphere.pos.x, sphere.pos.y, sphere.pos.z );
-   cur = '\0';
-
-   //radius
-   //Read in everything until , so next item is radius
-   while( cur != ',' )
-   {
-      if(fscanf( file, "%c", &cur) == EOF)
-      {
-         printf("Error parsing sphere\n");
-         exit(1);
-      }
-   }
-   if( fscanf(file, "%f", &sphere.radius) == EOF )
-   {
-      printf("Error parsing sphere\n");
-      exit(1);
-   }
-   printf( "radius: %f \n", sphere.radius );
-
-
-   sphere.info = createObjectInfo();
-   parseObjectPigment( file, sphere.info );
-   parseObjectFinish( file, sphere.info );
-   parseObjectTransforms( file, sphere.info );
-
-   return sphere;
-}
 
 /**
  *  CPE 2010
@@ -179,7 +140,7 @@ Sphere parseSphere( FILE *file )
  *  @author Nick Feeney
  */
 
-float triangleHitTest( const Triangle &triangle, const Ray &ray )
+float triangleHitTest(  Triangle triangle,  Ray ray )
 {
    vec3 direction = unit( ray.dir );
    vec3 position = ray.pos;
@@ -236,7 +197,7 @@ float triangleHitTest( const Triangle &triangle, const Ray &ray )
 
    return t;
 }
-Intersection triangleIntersection( const Triangle &triangle, const Ray &ray, float t )
+Intersection triangleIntersection(  Triangle triangle,  Ray ray, float t )
 {
    Intersection ret;
 
@@ -324,10 +285,10 @@ int createInitRays( Ray **rays, int width, int height, Camera cam )
    }
    return width * height;
 }
-__kernel void castRays( Scene scene, Ray *rays, int numRays, int width, int height, Color **buffer )
+void castRays( Scene scene, Ray *rays, int numRays, int width, int height, Color **buffer )
 {
-   int i = get_global_id(0);
-   buffer[rays[i].i][rays[i].j] = raytrace( scene, rays[i] );
+   for (int i = 0; i < numRays; i++)
+       buffer[rays[i].i][rays[i].j] = raytrace( scene, rays[i] );
 }
 Color raytrace( Scene scene, Ray ray )
 {
@@ -384,7 +345,7 @@ Color raytrace( Scene scene, Ray ray )
    }
    return limitColor( color );
 }
-Color limitColor( const Color &in )
+Color limitColor(  Color in )
 {
    Color ret;
    if( in.r > 1.0 )
@@ -410,7 +371,7 @@ Color limitColor( const Color &in )
 
    return ret;
 }
-Color plus( const Color &first, const Color &other )
+Color plus(  Color first,  Color other )
 {
    Color ret;
    ret.r = first.r + other.r;
@@ -496,15 +457,15 @@ Color directIllumination( Intersection inter, Scene scene )
  *  @author Nick Feeney
  */
 
-float mag(const vec3 &in)
+float mag( vec3 in)
 {
    return sqrt(in.x*in.x + in.y*in.y + in.z*in.z);
 }
-float dot(const vec3 &one, const vec3 &two)
+float dot( vec3 one,  vec3 two)
 {
    return one.x*two.x + one.y*two.y + one.z*two.z;
 }
-vec3 cross(const vec3 &one,const vec3 &two)
+vec3 cross( vec3 one, vec3 two)
 {
    vec3 newVector;
    newVector.x = one.y*two.z - one.z*two.y;
@@ -512,15 +473,15 @@ vec3 cross(const vec3 &one,const vec3 &two)
    newVector.z = one.x*two.y - one.y*two.x;
    return newVector;
 }
-float theta(const vec3 &one, const vec3 &two)
+float theta( vec3 one,  vec3 two)
 {
    return acosf( dot(one, two)/(mag(one) * mag(two))) * 180.0 / 3.14159;
 }
-float distance(const vec3 &one, const vec3 &two )
+float distance( vec3 one,  vec3 two )
 {
    return sqrt((one.x-two.x)*(one.x-two.x) + (one.y-two.y)*(one.y-two.y) + (one.z-two.z)*(one.z-two.z));
 }
-vec3 newDirection(const vec3 &to, const vec3 &from )
+vec3 newDirection( vec3 to,  vec3 from )
 {
    vec3 newVec;
    newVec.x = to.x - from.x;
@@ -528,7 +489,7 @@ vec3 newDirection(const vec3 &to, const vec3 &from )
    newVec.z = to.z - from.z;
    return newVec;
 }
-vec3 unit(const vec3 &in)
+vec3 unit( vec3 in)
 {
    float temp;
    vec3 newVector;
