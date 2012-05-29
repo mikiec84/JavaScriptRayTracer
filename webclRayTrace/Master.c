@@ -1,4 +1,4 @@
-#define DIM 100
+#define DIM 400
 
 typedef struct vec3{
    float x;
@@ -112,8 +112,10 @@ Color plus(  Color first,  Color other );
 Color directIllumination( Intersection inter, Scene scene );
 
 void createInitRays( __global struct Ray *rays, int width, int height, struct Camera cam );
-void castRays( struct Scene scene, __global struct Ray *rays, int numRays, int width, int height, __global uchar4 *buffer);
+//void castRays( __global struct Ray *rays, __global uchar4 *buffer);
 Color raytrace( struct Scene scene, Ray ray );
+
+Scene getScene();
 
 float mag( vec3 in);
 float dott( vec3 one,  vec3 two);
@@ -405,13 +407,19 @@ void createInitRays( __global Ray *rays, int width, int height, Camera cam )
       }
    }
 }
-void castRays( Scene scene, __global Ray *rays, int numRays, int width, int height, __global uchar4 *buffer )
+ __kernel void clCastRays(__global Ray* rays, __global uchar4* buffer)
 {
+   int col = get_global_id(0);
+   int row = get_global_id(1);
+   int i = col*DIM + row;
 
-   for (int i = 0; i < numRays; i++) {
-	   Color color = raytrace( scene, rays[i] );
-	   buffer[rays[i].i*DIM + rays[i].j] = (uchar4)(255*color.r,255*color.g,255*color.b, 255);
-	}
+   if (col >= DIM || row >= DIM) return;   
+   
+   Scene scene = getScene();
+   Color color = raytrace( scene, rays[i] );
+   buffer[rays[i].i*DIM + rays[i].j] = (uchar4)(255*color.r,255*color.g,255*color.b, 255);
+	
+	
 }
 Color raytrace( Scene scene, Ray ray )
 {
@@ -639,10 +647,15 @@ vec3 unit( vec3 in)
   __kernel void clRayTrace( __global Ray* rays,
 							__global uchar4* image)
   {
-    //int col = get_global_id(0);
-    //int row = get_global_id(1);
-   Scene scene;
 
+   Scene scene = getScene();
+   createInitRays( rays, DIM, DIM, scene.camera );
+  // castRays(rays, image);
+  }
+  
+  
+  Scene getScene() {
+   Scene scene;
    scene.numSpheres = 1;
    scene.numPlanes = 0;
    scene.numTriangles = 0;
@@ -684,9 +697,6 @@ vec3 unit( vec3 in)
    scene.pointLights[0].color.r = 1.0;
    scene.pointLights[0].color.g = 1.0;
    scene.pointLights[0].color.b = 1.0;
-
-   createInitRays( rays, DIM, DIM, scene.camera );
-   castRays( scene, rays, DIM*DIM, DIM, DIM, image );
-
+   return scene;
   }
   
