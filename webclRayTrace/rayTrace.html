@@ -41,11 +41,11 @@ function gpuRayTrace() {
       throw e;
     }
 
-	var raysSize = 8*4*1000*1000;
-	var raysBuffer = ctx.createBuffer(WebCL.CL_MEM_READ_WRITE, raysSize);
+	var raysSizeBytes = 8*100*100*4;
+	var raysBuffer = ctx.createBuffer(WebCL.CL_MEM_READ_WRITE, raysSizeBytes);
 	
-	var imageSize = 500*500*4;
-	var imageBuffer = ctx.createBuffer(WebCL.CL_MEM_READ_WRITE, imageSize);
+	var imageSizeBytes = 100*100*4;
+	var imageBuffer = ctx.createBuffer(WebCL.CL_MEM_READ_WRITE, imageSizeBytes);
 	
     // Create kernel and set arguments
     var kernel = program.createKernel ("clRayTrace");
@@ -70,7 +70,7 @@ function gpuRayTrace() {
     var pixels = canvasImgCtx.getImageData(0, 0, width, height);
 								  					  
     // Read the result buffer from OpenCL device
-    cmdQueue.enqueueReadBuffer (imageBuffer, false, 0, imageSize, pixels.data, []);
+    cmdQueue.enqueueReadBuffer (imageBuffer, false, 0, imageSizeBytes, pixels.data, []);
     cmdQueue.finish (); //Finish all the operations
 	canvasImgCtx.putImageData (pixels, 0, 0);
 	console.log("Finished webcl");	
@@ -117,7 +117,7 @@ function setupCanvas () {
  </head>
  <body onload="">
 <input type="button" value="Multiply Matrices on GPU" onclick="gpuRayTrace();">
-<img id="srcimg" src="beach.jpg"  width="500" height="500" style="display:none;" onload="setupCanvas ();">
+<img id="srcimg" src="beach.jpg"  width="100" height="100" style="display:none;" onload="setupCanvas ();">
 <canvas id="canvasImg"></canvas>
 <div id="output"> </div>
 

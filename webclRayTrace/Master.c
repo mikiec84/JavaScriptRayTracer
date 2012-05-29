@@ -1,3 +1,4 @@
+#define DIM 100
 
 typedef struct vec3{
    float x;
@@ -406,33 +407,30 @@ void createInitRays( __global Ray *rays, int width, int height, Camera cam )
 }
 void castRays( Scene scene, __global Ray *rays, int numRays, int width, int height, __global uchar4 *buffer )
 {
+
    for (int i = 0; i < numRays; i++) {
-		
-       
 	   Color color = raytrace( scene, rays[i] );
-	   buffer[rays[i].i*500 + rays[i].j] = (uchar4)(255,0,0, 255);
+	   buffer[rays[i].i*DIM + rays[i].j] = (uchar4)(255*color.r,255*color.g,255*color.b, 255);
 	}
 }
 Color raytrace( Scene scene, Ray ray )
 {
    Color color;
-   color.r = 0;
+   color.r = 0; // todo: change back to 0, we want black background
    color.b = 0;
    color.g = 0;
-
-   /*if (scene.numPlanes != 0) {
-      color.r = 1;
-      return color;
-	}*/
-
+   
    Intersection best;
    best.hit = 0;
+   
 
    float bestT = 10000;
-   float t;
+   float t = 0;
+   
    for( int j = 0; j < scene.numSpheres; j++ )
    {
       t = sphereHitTest( scene.spheres[j], ray );
+	  
       if( t > 0 )
       {
          if( !best.hit || t < bestT )
@@ -441,6 +439,7 @@ Color raytrace( Scene scene, Ray ray )
             bestT = t;
          }
       }
+	  
    }
    for( int j = 0; j < scene.numTriangles; j++ )
    {
@@ -472,6 +471,7 @@ Color raytrace( Scene scene, Ray ray )
       //printf("color: %f, %f, %f\n", color.r, color.g, color.b);
    }
    return limitColor( color );
+	
 }
 Color limitColor(  Color in )
 {
@@ -685,8 +685,8 @@ vec3 unit( vec3 in)
    scene.pointLights[0].color.g = 1.0;
    scene.pointLights[0].color.b = 1.0;
 
-   createInitRays( rays, 1000, 1000, scene.camera );
-   castRays( scene, rays, 1000*1000, 1000, 1000, image );
+   createInitRays( rays, DIM, DIM, scene.camera );
+   castRays( scene, rays, DIM*DIM, DIM, DIM, image );
 
   }
   
