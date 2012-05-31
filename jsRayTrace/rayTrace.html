@@ -1,0 +1,74 @@
+<html>
+ <head>
+  <title>GPU Ray Tracer</title>
+ 
+<script type="text/javascript" src="Master.js"></script> 
+
+
+
+<script type="text/javascript">
+
+
+function setPixel(imageData, x, y, color) {
+    index = (x + y * imageData.width) * 4;
+    imageData.data[index+0] = color.r * 255;
+    imageData.data[index+1] = color.g * 255;
+    imageData.data[index+2] = color.b * 255;
+    imageData.data[index+3] = 255;
+}
+
+function gpuRayTrace() {
+	try{
+		var rays = [];
+		var buffer = [];
+		clRayTrace(rays, buffer);
+		clCastRays(rays, buffer);
+		
+		// Get pixel data from canvas
+		var canvasImg = document.getElementById("canvasImg");
+		var canvasImgCtx = canvasImg.getContext("2d");
+		var width = canvasImg.width;
+		var height = canvasImg.height;
+		var pixels = canvasImgCtx.getImageData(0, 0, width, height);
+		for (var x = 0; x < 400; x++) {
+			for (var y = 0; y < 400; y++) {
+				var i = 400 * x + y;
+				setPixel(pixels, x, y, buffer[i]);
+			}
+		}
+		canvasImgCtx.putImageData (pixels, 0, 0);
+  } catch(e) {
+    document.getElementById("output").innerHTML += 
+      "<h3>ERROR:</h3><pre style=\"color:red;\">" + e.message + "</pre>";
+    throw e;
+  }  
+}
+
+function setupCanvas () {
+  try {
+    var canvasImg = document.getElementById("canvasImg");
+    var canvasImgCtx = canvasImg.getContext("2d");
+    var srcImg = document.getElementById("srcimg");
+    canvasImg.width = srcImg.width;
+    canvasImg.height = srcImg.height;
+    canvasImgCtx.drawImage (srcImg, 0, 0, srcImg.width, srcImg.height);
+  } catch(e) {
+    document.getElementById("output").innerHTML += 
+      "<h3>ERROR:</h3><pre style=\"color:red;\">" + e.message + "</pre>";
+    throw e;
+  }
+}
+
+  </script>
+
+
+
+ </head>
+ <body onload="">
+<input type="button" value="Multiply Matrices on GPU" onclick="gpuRayTrace();">
+<img id="srcimg" src="beach.jpg"  width="400" height="400" style="display:none;" onload="setupCanvas ();">
+<canvas id="canvasImg"></canvas>
+<div id="output"> </div>
+
+ </body>
+</html>
