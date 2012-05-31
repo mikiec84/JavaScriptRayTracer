@@ -109,13 +109,13 @@ Intersection triangleIntersection(  Triangle triangle,  Ray ray, float t );
 Color limitColor(  Color in );
 Color plus(  Color first,  Color other );
 
-Color directIllumination( Intersection inter, Scene scene );
+Color directIllumination( Intersection inter, __global Scene *scene );
 
 void createInitRays( __global struct Ray *rays, int width, int height, struct Camera cam );
 //void castRays( __global struct Ray *rays, __global uchar4 *buffer);
-Color raytrace( struct Scene scene, Ray ray );
+Color raytrace(__global Scene* scene, Ray ray );
 
-Scene getScene();
+void getScene(__global Scene* scene);
 
 float mag( vec3 in);
 float dott( vec3 one,  vec3 two);
@@ -124,9 +124,7 @@ float theta( vec3 one,  vec3 two);
 float distancee( vec3 one,  vec3 two );
 vec3 newDirection( vec3 to,  vec3 from );
 vec3 unit( vec3 in);
-  
-  
-  
+    
 /**
  *  CPE 2010
  *  -------------------
@@ -407,7 +405,7 @@ void createInitRays( __global Ray *rays, int width, int height, Camera cam )
       }
    }
 }
- __kernel void clCastRays(__global Ray* rays, __global uchar4* buffer)
+ __kernel void clCastRays(__global Scene* scene, __global Ray* rays, __global uchar4* buffer)
 {
    int col = get_global_id(0);
    int row = get_global_id(1);
@@ -415,13 +413,12 @@ void createInitRays( __global Ray *rays, int width, int height, Camera cam )
 
    if (col >= DIM || row >= DIM) return;   
    
-   Scene scene = getScene();
    Color color = raytrace( scene, rays[i] );
    buffer[rays[i].i*DIM + rays[i].j] = (uchar4)(255*color.r,255*color.g,255*color.b, 255);
 	
 	
 }
-Color raytrace( Scene scene, Ray ray )
+Color raytrace(__global Scene* scene, Ray ray )
 {
    Color color;
    color.r = 0; // todo: change back to 0, we want black background
@@ -435,40 +432,40 @@ Color raytrace( Scene scene, Ray ray )
    float bestT = 10000;
    float t = 0;
    
-   for( int j = 0; j < scene.numSpheres; j++ )
+   for( int j = 0; j < scene->numSpheres; j++ )
    {
-      t = sphereHitTest( scene.spheres[j], ray );
+      t = sphereHitTest( scene->spheres[j], ray );
 	  
       if( t > 0 )
       {
          if( !best.hit || t < bestT )
          {
-            best = sphereIntersection( scene.spheres[j], ray, t );
+            best = sphereIntersection( scene->spheres[j], ray, t );
             bestT = t;
          }
       }
 	  
    }
-   for( int j = 0; j < scene.numTriangles; j++ )
+   for( int j = 0; j < scene->numTriangles; j++ )
    {
-      t = triangleHitTest( scene.triangles[j], ray );
+      t = triangleHitTest( scene->triangles[j], ray );
       if( t > 0 )
       {
          if( !best.hit || t < bestT )
          {
-            best = triangleIntersection( scene.triangles[j], ray, t );
+            best = triangleIntersection( scene->triangles[j], ray, t );
             bestT = t;
          }
       }
    }
-   for( int j = 0; j < scene.numPlanes; j++ )
+   for( int j = 0; j < scene->numPlanes; j++ )
    {
-      t = planeHitTest( scene.planes[j], ray );
+      t = planeHitTest( scene->planes[j], ray );
       if( t > 0 )
       {
          if( !best.hit || t < bestT )
          {
-            best = planeIntersection( scene.planes[j], ray, t );
+            best = planeIntersection( scene->planes[j], ray, t );
             bestT = t;
          }
       }
@@ -516,16 +513,16 @@ Color plus(  Color first,  Color other )
    return limitColor( ret );
 }
 
-Color directIllumination( Intersection inter, Scene scene )
+Color directIllumination( Intersection inter, __global Scene* scene )
 {
    Color ret;
    ret.r = 0;
    ret.b = 0;
    ret.g = 0;
 
-   for( int i = 0; i < scene.numPointLights; i++ )
+   for( int i = 0; i < scene->numPointLights; i++ )
    {
-      PointLight temp = scene.pointLights[i];
+      PointLight temp = scene->pointLights[i];
       vec3 lvec = unit(newDirection(temp.pos, inter.hitMark ));
 
       float nldott = dott(lvec, inter.normal );
@@ -533,15 +530,15 @@ Color directIllumination( Intersection inter, Scene scene )
       float lightdistancee = distancee( temp.pos, inter.hitMark );
 
       //contruct possible hits for shadow ray using bvh
-      for( int j = 0; j < scene.numSpheres; j++ )
+      for( int j = 0; j < scene->numSpheres; j++ )
       {
          Ray shadowRay;
          shadowRay.pos = inter.hitMark;
          shadowRay.dir = lvec;
-         float t = sphereHitTest(scene.spheres[j], shadowRay );
+         float t = sphereHitTest(scene->spheres[j], shadowRay );
          if( t > 0 )
          {
-            Intersection info = sphereIntersection( scene.spheres[j], shadowRay, t );
+            Intersection info = sphereIntersection( scene->spheres[j], shadowRay, t );
             if(info.hit)
             {
                if( distancee( info.hitMark, inter.hitMark ) < lightdistancee )
@@ -644,59 +641,67 @@ vec3 unit( vec3 in)
 }
 
 /*Web CL Stuff */
-  __kernel void clRayTrace( __global Ray* rays,
+  __kernel void clRayTrace( __global Scene* scene,
+							__global Ray* rays,
 							__global uchar4* image)
   {
-
-   Scene scene = getScene();
-   createInitRays( rays, DIM, DIM, scene.camera );
+   getScene(scene);
+   createInitRays( rays, DIM, DIM, scene->camera );
   // castRays(rays, image);
   }
   
+
   
-  Scene getScene() {
-   Scene scene;
-   scene.numSpheres = 1;
-   scene.numPlanes = 0;
-   scene.numTriangles = 0;
-   scene.numPointLights = 1;
+  void  getScene(__global Scene* scene) {
+   scene->numSpheres =2;
+   scene->numPlanes = 0;
+   scene->numTriangles = 0;
+   scene->numPointLights = 1;
 
-   scene.spheres[0].pos.x = 0;
-   scene.spheres[0].pos.y = 0;
-   scene.spheres[0].pos.z = 0;
+   scene->spheres[0].pos.x = -2;
+   scene->spheres[0].pos.y = 0;
+   scene->spheres[0].pos.z = 0;
+   scene->spheres[0].info = createObjectInfo();
+   scene->spheres[0].info.colorInfo.pigment.r = 1.0;
+   scene->spheres[0].info.colorInfo.pigment.g = 0;
+   scene->spheres[0].info.colorInfo.pigment.b = 1.0;
+   scene->spheres[0].info.colorInfo.finish_ambient = 0.2;
+   scene->spheres[0].info.colorInfo.finish_diffuse = 0.4;
+   scene->spheres[0].radius = 2;
+   
+   scene->spheres[1].pos.x = 6;
+   scene->spheres[1].pos.y = 0;
+   scene->spheres[1].pos.z = 0;
+   scene->spheres[1].info = createObjectInfo();
+   scene->spheres[1].info.colorInfo.pigment.r = 1.0;
+   scene->spheres[1].info.colorInfo.pigment.g = 0;
+   scene->spheres[1].info.colorInfo.pigment.b = 1.0;
+   scene->spheres[1].info.colorInfo.finish_ambient = 0.2;
+   scene->spheres[1].info.colorInfo.finish_diffuse = 0.4;
+   scene->spheres[1].radius = 2;
 
-   scene.spheres[0].info = createObjectInfo();
-   scene.spheres[0].info.colorInfo.pigment.r = 1.0;
-   scene.spheres[0].info.colorInfo.pigment.g = 0;
-   scene.spheres[0].info.colorInfo.pigment.b = 1.0;
-   scene.spheres[0].info.colorInfo.finish_ambient = 0.2;
-   scene.spheres[0].info.colorInfo.finish_diffuse = 0.4;
-   scene.spheres[0].radius = 2;
-
-   scene.camera.up.x = 0;
-   scene.camera.up.y = 1;
-   scene.camera.up.z = 0;
-   scene.camera.right.x = 1.33333;
-   scene.camera.right.y = 0;
-   scene.camera.right.z = 0;
-   scene.camera.lookat.x = 0;
-   scene.camera.lookat.y = 0;
-   scene.camera.lookat.z = 0;
-   scene.camera.pos.x = 0;
-   scene.camera.pos.y = 0;
-   scene.camera.pos.z = 14;
-   scene.camera.l = -mag(scene.camera.right)/2;
-   scene.camera.r = mag(scene.camera.right)/2;
-   scene.camera.t = mag(scene.camera.up)/2;
-   scene.camera.b = -mag(scene.camera.up)/2;
-
-
-   scene.pointLights[0].pos.x = -100;
-   scene.pointLights[0].pos.y = 100;
-   scene.pointLights[0].pos.z = 100;
-   scene.pointLights[0].color.r = 1.0;
-   scene.pointLights[0].color.g = 1.0;
-   scene.pointLights[0].color.b = 1.0;
-   return scene;
+   scene->camera.up.x = 0;
+   scene->camera.up.y = 1;
+   scene->camera.up.z = 0;
+   scene->camera.right.x = 1.33333;
+   scene->camera.right.y = 0;
+   scene->camera.right.z = 0;
+   scene->camera.lookat.x = 0;
+   scene->camera.lookat.y = 0;
+   scene->camera.lookat.z = 0;
+   scene->camera.pos.x = 0;
+   scene->camera.pos.y = 0;
+   scene->camera.pos.z = 14;
+   scene->camera.l = -mag(scene->camera.right)/2;
+   scene->camera.r = mag(scene->camera.right)/2;
+   scene->camera.t = mag(scene->camera.up)/2;
+   scene->camera.b = -mag(scene->camera.up)/2;
+   
+   scene->pointLights[0].pos.x = -100;
+   scene->pointLights[0].pos.y = 100;
+   scene->pointLights[0].pos.z = 100;
+   scene->pointLights[0].color.r = 1.0;
+   scene->pointLights[0].color.g = 1.0;
+   scene->pointLights[0].color.b = 1.0;
   }
   

@@ -44,6 +44,9 @@ function gpuRayTrace() {
 	var width = 400;
 	var height = 400;
 	
+	var sceneSizeBytes = 3000;
+	var sceneBuffer = ctx.createBuffer(WebCL.CL_MEM_READ_WRITE, sceneSizeBytes);
+	
 	var raysSizeBytes = 8*width*height*4;
 	var raysBuffer = ctx.createBuffer(WebCL.CL_MEM_READ_WRITE, raysSizeBytes);
 	
@@ -52,8 +55,9 @@ function gpuRayTrace() {
 	
     // Create kernel and set arguments
     var kernel = program.createKernel ("clRayTrace");
-	kernel.setKernelArg(0, raysBuffer);
-	kernel.setKernelArg(1, imageBuffer);
+	kernel.setKernelArg(0, sceneBuffer);
+	kernel.setKernelArg(1, raysBuffer);
+	kernel.setKernelArg(2, imageBuffer);
     var cmdQueue = ctx.createCommandQueue (devices[0], 0);
     // Init ND-range 
     var localWS = [1,1];
@@ -65,8 +69,9 @@ function gpuRayTrace() {
 	cmdQueue.finish ();				  
 							  
 	var kernel2 = program.createKernel("clCastRays");
-	kernel2.setKernelArg(0, raysBuffer);
-	kernel2.setKernelArg(1, imageBuffer);
+	kernel2.setKernelArg(0, sceneBuffer);
+	kernel2.setKernelArg(1, raysBuffer);
+	kernel2.setKernelArg(2, imageBuffer);
 	var localWS = [10, 10];  
     var globalWS = [Math.ceil (width / localWS[0]) * localWS[0], 
                     Math.ceil (height / localWS[1]) * localWS[1]];
